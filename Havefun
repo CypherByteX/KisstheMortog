@@ -1,0 +1,96 @@
+<div id="game">
+    <h1>Kiss the Mortog</h1>
+    <div id="gameArea" style="position: relative; width: 100vw; height: 100vh; overflow: hidden;">
+        <div id="mortog" style="position: absolute; font-size: 50px;">🐸</div>
+        <div id="obstacle" style="position: absolute; width: 50px; height: 50px; background: red; display: none;"></div>
+    </div>
+    <p>Score: <span id="score">0</span></p>
+</div>
+
+
+
+
+CSS
+
+#gameArea {
+    background-color: #e0f7fa; /* Light blue background */
+    border: 2px solid #00796b; /* Darker border */
+}
+
+
+JS
+
+let score = 0;
+let gameActive = false;
+
+const mortog = document.getElementById('mortog');
+const obstacle = document.getElementById('obstacle');
+const scoreDisplay = document.getElementById('score');
+
+mortog.addEventListener('click', function() {
+    if (gameActive) {
+        score++;
+        scoreDisplay.innerText = score;
+        moveMortog(); // Move Mortog to a new position
+    }
+});
+
+function startGame() {
+    gameActive = true;
+    score = 0;
+    scoreDisplay.innerText = score;
+    moveMortog(); // Initial position
+
+    // Start dropping obstacles
+    setInterval(dropObstacle, 1000); // Every second
+}
+
+function moveMortog() {
+    const x = Math.random() * (window.innerWidth - 50); // Random X position
+    const y = Math.random() * (window.innerHeight - 50); // Random Y position
+    mortog.style.left = `${x}px`;
+    mortog.style.top = `${y}px`;
+}
+
+function dropObstacle() {
+    const x = Math.random() * (window.innerWidth - 50); // Random X position
+    obstacle.style.left = `${x}px`;
+    obstacle.style.display = 'block';
+
+    // Animate the obstacle falling
+    obstacle.style.top = '0px';
+    let dropInterval = setInterval(() => {
+        let currentTop = parseInt(obstacle.style.top);
+        if (currentTop < window.innerHeight) {
+            obstacle.style.top = `${currentTop + 5}px`;
+        } else {
+            clearInterval(dropInterval);
+            obstacle.style.display = 'none'; // Hide obstacle after falling
+        }
+
+        // Check for collision
+        if (collisionDetected(mortog, obstacle)) {
+            endGame();
+        }
+    }, 100);
+}
+
+function collisionDetected(mortog, obstacle) {
+    const mortogRect = mortog.getBoundingClientRect();
+    const obstacleRect = obstacle.getBoundingClientRect();
+    
+    return !(
+        mortogRect.top > obstacleRect.bottom ||
+        mortogRect.bottom < obstacleRect.top ||
+        mortogRect.right < obstacleRect.left ||
+        mortogRect.left > obstacleRect.right
+    );
+}
+
+function endGame() {
+    gameActive = false;
+    obstacle.style.display = 'none'; // Hide the obstacle
+    alert('Game Over! Your score is ' + score);
+}
+
+startGame();
